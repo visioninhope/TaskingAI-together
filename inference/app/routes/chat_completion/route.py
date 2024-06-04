@@ -60,6 +60,7 @@ async def chat_completion(
                 functions=functions,
                 proxy=proxy,
                 custom_headers=custom_headers,
+                model_schema=model_schema,
             )
             if i > 0:
                 response.fallback_index = i - 1
@@ -132,6 +133,7 @@ async def chat_completion_stream(
                 functions=functions,
                 proxy=proxy,
                 custom_headers=custom_headers,
+                model_schema=model_schema,
             ):
                 if isinstance(response, ChatCompletion):
                     if i:

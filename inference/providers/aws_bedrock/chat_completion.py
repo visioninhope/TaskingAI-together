@@ -1,5 +1,6 @@
 from typing import Dict
 
+from app.models import ModelSchema
 from provider_dependency.chat_completion import *
 from aiobotocore.session import get_session
 import json
@@ -129,6 +130,7 @@ class AwsBedrockChatCompletionModel(BaseChatCompletionModel):
         functions: Optional[List[ChatCompletionFunction]] = None,
         proxy: Optional[str] = None,
         custom_headers: Optional[Dict[str, str]] = None,
+        model_schema: ModelSchema = None,
     ):
         payload = _build_aws_bedrock_chat_completion_payload(messages, False, provider_model_id, configs)
         input_tokens = estimate_input_tokens(

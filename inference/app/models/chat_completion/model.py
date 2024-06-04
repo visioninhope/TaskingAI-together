@@ -1,6 +1,6 @@
 from abc import ABC
 from typing import Dict, List, Optional, Tuple
-from app.models import ProviderCredentials
+from app.models import ProviderCredentials, ModelSchema
 from .chat_completion import *
 from .function_call import *
 from .model_config import *
@@ -90,10 +90,11 @@ class BaseChatCompletionModel(ABC):
         functions: Optional[List[ChatCompletionFunction]] = None,
         proxy: Optional[str] = None,
         custom_headers: Optional[Dict[str, str]] = None,
+        model_schema: ModelSchema = None,
     ):
         # Convert ChatCompletionMessages to the required format
         api_url, headers, payload = await self.prepare_request(
-            False, provider_model_id, messages, credentials, configs, function_call, functions
+            False, provider_model_id, messages, credentials, configs, function_call, functions, model_schema
         )
         if proxy:
             if not proxy.startswith("https://"):
@@ -120,7 +121,7 @@ class BaseChatCompletionModel(ABC):
                 text_content = self.extract_text_content(core_data)
                 function_calls = self.extract_function_calls(core_data)
                 finish_reason = self.extract_finish_reason(core_data)
-        response = await self.prepare_response(
+        response = self.prepare_response(
             finish_reason=finish_reason,
             text_content=text_content,
             function_calls_content=None,
@@ -141,6 +142,7 @@ class BaseChatCompletionModel(ABC):
         functions: Optional[List[ChatCompletionFunction]] = None,
         proxy: Optional[str] = None,
         custom_headers: Optional[Dict[str, str]] = None,
+        model_schema: ModelSchema = None,
     ):
         api_url, headers, payload = await self.prepare_request(
             True, provider_model_id, messages, credentials, configs, function_call, functions
@@ -194,7 +196,7 @@ class BaseChatCompletionModel(ABC):
                 if empty_stream:
                     raise_provider_api_error("The model stream response is empty.")
 
-                response = await self.prepare_response(
+                response = self.prepare_response(
                     finish_reason=finish_reason,
                     text_content=text_content,
                     function_calls_content=function_calls_content,
@@ -214,6 +216,7 @@ class BaseChatCompletionModel(ABC):
         configs: ChatCompletionModelConfiguration,
         function_call: Optional[str] = None,
         functions: Optional[List[ChatCompletionFunction]] = None,
+        model_schema: ModelSchema = None,
     ) -> Tuple[str, Dict, Dict]:
         """
         Prepare the request for the chat completion model.
@@ -221,7 +224,7 @@ class BaseChatCompletionModel(ABC):
         """
         raise NotImplementedError
 
-    async def prepare_response(
+    def prepare_response(
         self,
         finish_reason: ChatCompletionFinishReason,
         text_content: str,
